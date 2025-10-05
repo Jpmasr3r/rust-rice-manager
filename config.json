@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "name": "hyprland"
+    }
+  ],
+  "files": [],
+  "rices": [],
+  "config": {
+    "rices_path": "rices"
+  }
+}
