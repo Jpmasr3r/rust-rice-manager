@@ -1,10 +1,22 @@
 {
   "apps": [
     {
-      "name": "hyprland"
+      "name": "rofi"
+    },
+    {
+      "name": "hyrpland"
     }
   ],
-  "files": [],
+  "files": [
+    {
+      "path": ".config/hypr/hyrpland.conf",
+      "app_index": 1
+    },
+    {
+      "path": ".config/rofi/rofi.conf",
+      "app_index": 0
+    }
+  ],
   "rices": [],
   "config": {
     "rices_path": "rices"

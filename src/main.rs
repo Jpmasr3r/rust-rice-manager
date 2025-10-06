@@ -10,7 +10,7 @@ fn main() {
         SubArgs::App { function } => {
             println!("Entrando em App");
             match function {
-                Crud::Add { name } => {
+                CrudApp::Add { name } => {
                     let mut data = read_json();
 
                     if data.apps.iter().any(|x| x.name == name) {
@@ -24,7 +24,7 @@ fn main() {
                         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
                     };
                 }
-                Crud::Delete { name } => {
+                CrudApp::Delete { name } => {
                     let mut data = read_json();
 
                     if !data.apps.iter().any(|x| x.name == name) {
@@ -40,7 +40,7 @@ fn main() {
                         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
                     };
                 }
-                Crud::Update { name, new_name } => {
+                CrudApp::Update { name, new_name } => {
                     let mut data = read_json();
 
                     if !data.apps.iter().any(|x| x.name == name) {
@@ -56,7 +56,7 @@ fn main() {
                         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
                     };
                 }
-                Crud::List => {
+                CrudApp::List => {
                     println!("Lista de Apps");
                     let data = read_json();
                     for app in data.apps {
@@ -65,7 +65,81 @@ fn main() {
                 }
             }
         }
-        _ => {}
+        SubArgs::File { function, app_name } => {
+            println!("Entrando em File");
+            match function {
+                CrudFile::Add { path } => {
+                    let mut data = read_json();
+
+                    if let Some(index) = data.apps.iter().position(|app| app.name == app_name) {
+                        data.files.push(json::File::from(path.clone(), index));
+                        match json_write(data) {
+                            Ok(_) => println!("Novo File {} adicionado", path),
+                            Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
+                        };
+                    } else {
+                        println!("App {} não encontrado", app_name);
+                    }
+                }
+                CrudFile::Update { path, new_path } => {
+                    let mut data = read_json();
+
+                    if let Some(index) = data.apps.iter().position(|app| app.name == app_name) {
+                        if let Some(file) = data
+                            .files
+                            .iter_mut()
+                            .find(|file| file.path == path && file.app_index == index)
+                        {
+                            file.path = new_path.clone();
+                            match json_write(data) {
+                                Ok(_) => println!("File {} atualizado", path),
+                                Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
+                            };
+                        } else {
+                            println!("File {} não encontrado para o App {}", path, app_name);
+                        }
+                    } else {
+                        println!("App {} não encontrado", app_name);
+                    }
+                }
+                CrudFile::Delete { path } => {
+                    let mut data = read_json();
+
+                    if let Some(app_index) = data.apps.iter().position(|app| app.name == app_name) {
+                        if let Some(file_index) = data
+                            .files
+                            .iter()
+                            .position(|file| file.path == path && file.app_index == app_index)
+                        {
+                            data.files.remove(file_index);
+
+                            match json_write(data) {
+                                Ok(_) => println!("File {} removido do App {}", path, app_name),
+                                Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
+                            };
+                        } else {
+                            println!("File {} não encontrado para o App {}", path, app_name);
+                        }
+                    } else {
+                        println!("App {} não encontrado", app_name);
+                    }
+                }
+                CrudFile::List => {
+                    let data = read_json();
+
+                    println!("Lista de Files");
+                    for file in data.files {
+                        println!(
+                            "Path => {}  ---  App => {}",
+                            file.path, data.apps[file.app_index].name
+                        )
+                    }
+                }
+            }
+        }
+        SubArgs::Change { rice } => {
+            println!("Entrando em change");
+        }
     }
 }
 
@@ -83,15 +157,21 @@ struct Args {
 enum SubArgs {
     App {
         #[command(subcommand)]
-        function: Crud,
+        function: CrudApp,
     },
-    File,
-    Change,
-    List,
+    File {
+        #[command(subcommand)]
+        function: CrudFile,
+        #[arg(short, long = "app-name")]
+        app_name: String,
+    },
+    Change {
+        rice: u32,
+    },
 }
 
 #[derive(clap::Subcommand)]
-enum Crud {
+enum CrudApp {
     Add {
         #[arg(long = "name", short = 'n')]
         name: String,
@@ -106,5 +186,24 @@ enum Crud {
     Delete {
         #[arg(long = "name", short = 'n')]
         name: String,
+    },
+}
+
+#[derive(clap::Subcommand)]
+enum CrudFile {
+    Add {
+        #[arg(long = "path", short = 'p')]
+        path: String,
+    },
+    List,
+    Update {
+        #[arg(long = "path", short = 'p')]
+        path: String,
+        #[arg(long = "new-path")]
+        new_path: String,
+    },
+    Delete {
+        #[arg(long = "path", short = 'p')]
+        path: String,
     },
 }

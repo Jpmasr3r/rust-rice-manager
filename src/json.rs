@@ -68,7 +68,13 @@ impl App {
 #[derive(Serialize, Deserialize)]
 pub struct File {
     pub path: String,
-    pub app: App,
+    pub app_index: usize,
+}
+
+impl File {
+    pub fn from(path: String, app_index: usize) -> Self {
+        Self { path, app_index }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
