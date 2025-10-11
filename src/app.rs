@@ -27,8 +27,8 @@ pub fn add(name: String) {
         return;
     }
 
-    data.apps.push(json::App::from(name.clone()));
-    match json::json_write(data) {
+    data.apps.push(json::App::new(name.clone()));
+    match json::json_write(&data) {
         Ok(_) => println!("Novo App {} adicionado", name),
         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
     };
@@ -45,7 +45,7 @@ pub fn delete(name: String) {
     if let Some(pos) = data.apps.iter().position(|x| x.name == name) {
         data.apps.remove(pos);
     }
-    match json::json_write(data) {
+    match json::json_write(&data) {
         Ok(_) => println!("App {} removido", name),
         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
     };
@@ -62,7 +62,7 @@ pub fn update(name: String, new_name: String) {
     if let Some(pos) = data.apps.iter().position(|x| x.name == name) {
         data.apps[pos].name = new_name.clone();
     }
-    match json::json_write(data) {
+    match json::json_write(&data) {
         Ok(_) => println!("App {} atualizado para {}", name, new_name),
         Err(e) => eprintln!("Erro ao salvar JSON: {}", e),
     };

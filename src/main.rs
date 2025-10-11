@@ -1,12 +1,18 @@
 use clap::Parser;
 
-use crate::json::{json_write, read_json};
-
 mod app;
-mod change;
 mod file;
 mod json;
+mod rice;
 fn main() {
+    match json::Config::create_config_dir() {
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!("Failed to create config directory: {}", e);
+            return;
+        }
+    }
+
     let rrm = Args::parse();
 
     match rrm.sub_args {
@@ -22,14 +28,59 @@ fn main() {
         SubArgs::File { function, app_name } => {
             println!("Entrando em File");
             match function {
-                file::Crud::Add { path } => file::add(app_name, path),
-                file::Crud::Update { path, new_path } => file::update(app_name, path, new_path),
-                file::Crud::Delete { path } => file::delete(app_name, path),
+                file::Crud::Add { path, id } => file::add(app_name, path, id),
+                file::Crud::Update { new_path, id } => file::update(app_name, new_path, id),
+                file::Crud::Delete { id } => file::delete(app_name, id),
                 file::Crud::List => file::list(),
             }
         }
-        SubArgs::Change { rice } => {
-            println!("Entrando em change");
+        SubArgs::Rice { function } => {
+            println!("Entrando em rice");
+            match function {
+                rice::CrudRice::Add { id } => {
+                    rice::add_rice(id);
+                }
+                rice::CrudRice::Delete { id } => {
+                    rice::delete_rice(id);
+                }
+                rice::CrudRice::List => {
+                    rice::list_rice();
+                }
+                rice::CrudRice::Update { id, new_id } => {
+                    rice::update_rice(id, new_id);
+                }
+                rice::CrudRice::File { function } => match function {
+                    rice::CrudRiceFile::Add {
+                        file_id,
+                        id,
+                        rice_id,
+                    } => {
+                        //rice_id: String, id: String, file_id: String
+                        rice::add_rice_file(rice_id, id, file_id);
+                    }
+                    rice::CrudRiceFile::Delete {
+                        file_id,
+                        rice_id,
+                        id,
+                    } => {
+                        //rice_id: String, id: String, file_id: String
+                        rice::delete_rice_file(rice_id, id, file_id);
+                    }
+                    rice::CrudRiceFile::List { rice_id } => {
+                        //rice_id: String
+                        rice::list_rice_file(rice_id);
+                    }
+                    rice::CrudRiceFile::Update {
+                        rice_id,
+                        id,
+                        file_id,
+                        new_id,
+                    } => {
+                        //rice_id: String, id: String, file_id: String, new_id: String
+                        rice::update_rice_file(rice_id, id, file_id, new_id);
+                    }
+                },
+            }
         }
     }
 }
@@ -56,7 +107,8 @@ enum SubArgs {
         #[arg(short, long = "app-name")]
         app_name: String,
     },
-    Change {
-        rice: u32,
+    Rice {
+        #[command(subcommand)]
+        function: rice::CrudRice,
     },
 }
