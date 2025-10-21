@@ -1,19 +1,18 @@
 use serde::{Deserialize, Serialize};
 use std::{fs, io, path::PathBuf};
 
-const PATH_TO_CONFIG_FILE: &str = ".config/rrm/config.json";
+const PATH_TO_CONFIG_FILE: &str = ".config/rrm";
 
-fn get_config_file_path() -> PathBuf {
+pub fn get_config_file_path() -> PathBuf {
     PathBuf::from(std::env::var("HOME").expect("Variável HOME não encontrada"))
         .join(PATH_TO_CONFIG_FILE)
 }
 
-fn create_default_config() -> String {
-    let config_path = get_config_file_path();
+pub fn create_default_config() -> String {
+    let config_path = get_config_file_path().join("config.json");
     let default_data = Data::default();
     let json = serde_json::to_string_pretty(&default_data).unwrap();
 
-    // Criar diretório pai se não existir
     if let Some(parent) = config_path.parent() {
         fs::create_dir_all(parent).unwrap();
     }
@@ -23,7 +22,7 @@ fn create_default_config() -> String {
 }
 
 pub fn read_json() -> Data {
-    let config_path = get_config_file_path();
+    let config_path = get_config_file_path().join("config.json");
 
     let content = fs::read_to_string(&config_path).unwrap_or_else(|_| create_default_config());
 
@@ -35,11 +34,10 @@ pub fn read_json() -> Data {
 }
 
 pub fn json_write(data: &Data) -> io::Result<()> {
-    let config_path = get_config_file_path();
+    let config_path = get_config_file_path().join("config.json");
     let json = serde_json::to_string_pretty(&data)
         .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
-    // Garantir que o diretório existe
     if let Some(parent) = config_path.parent() {
         fs::create_dir_all(parent)?;
     }
@@ -49,41 +47,23 @@ pub fn json_write(data: &Data) -> io::Result<()> {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Data {
-    pub apps: Vec<App>,
     pub files: Vec<File>,
     pub rices: Vec<Rice>,
-    pub config: Config,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct App {
-    pub name: String,
-}
-
-impl App {
-    pub fn new(name: String) -> Self {
-        Self { name }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct File {
-    pub id: String,
     pub path: String,
-    pub app_index: usize,
+    pub id: String,
 }
 
 impl File {
-    pub fn new(path: String, app_index: usize, id: String) -> Self {
-        Self {
-            id,
-            path,
-            app_index,
-        }
+    pub fn new(path: String, id: String) -> Self {
+        Self { path, id }
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Rice {
     pub id: String,
     pub symlinks: Vec<Symlink>,
@@ -96,57 +76,16 @@ impl Rice {
             symlinks: Vec::new(),
         }
     }
-
-    pub fn create_rice_dir(&self) -> io::Result<()> {
-        let path = Config::get_config_path().join("rices").join(&self.id);
-        fs::create_dir_all(path)
-    }
-
-    pub fn delete_rice_dir(&self) -> io::Result<()> {
-        let path = Config::get_config_path().join("rices").join(&self.id);
-        fs::remove_dir_all(path)
-    }
-
-    pub fn rename_rice_dir(&self, new_id: &str) -> io::Result<()> {
-        let old_path = Config::get_config_path().join("rices").join(&self.id);
-        let new_path = Config::get_config_path().join("rices").join(new_id);
-        fs::rename(old_path, new_path)
-    }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct Config {
-    pub rices_path: String,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            rices_path: String::from("rices/"),
-        }
-    }
-}
-
-impl Config {
-    pub fn get_config_path() -> PathBuf {
-        PathBuf::from(std::env::var("HOME").expect("Variável HOME não encontrada"))
-            .join(".config")
-            .join("rrm")
-    }
-
-    pub fn create_config_dir() -> io::Result<()> {
-        fs::create_dir_all(Self::get_config_path())
-    }
-}
-
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct Symlink {
-    pub file_index: usize,
-    pub id: String,
+    pub file: usize,
+    pub path: String,
 }
 
 impl Symlink {
-    pub fn new(file_index: usize, id: String) -> Self {
-        Self { file_index, id }
+    pub fn new(file: usize, path: String) -> Self {
+        Self { file, path }
     }
 }
