@@ -1,15 +1,28 @@
 use serde::{Deserialize, Serialize};
-use std::{fs, io, path::PathBuf};
+use std::{fs, io, path::PathBuf, sync::OnceLock};
 
-const PATH_TO_CONFIG_FILE: &str = ".config/rrm";
+static DEV_MODE: OnceLock<bool> = OnceLock::new();
+pub fn set_dev_mode(dev: bool) {
+    DEV_MODE.set(dev).expect("DEV_MODE já foi inicializado");
+}
+
+pub fn is_dev_mode() -> bool {
+    *DEV_MODE.get().unwrap_or(&false)
+}
 
 pub fn get_config_file_path() -> PathBuf {
-    PathBuf::from(std::env::var("HOME").expect("Variável HOME não encontrada"))
-        .join(PATH_TO_CONFIG_FILE)
+    if is_dev_mode() {
+        PathBuf::from(std::env::var("HOME").expect("Variável HOME não encontrada"))
+            .join("code/rust-rice-manager/config")
+    } else {
+        PathBuf::from(std::env::var("HOME").expect("Variável HOME não encontrada"))
+            .join(".config/rrm")
+    }
 }
 
 pub fn create_default_config() -> String {
     let config_path = get_config_file_path().join("config.json");
+
     let default_data = Data::default();
     let json = serde_json::to_string_pretty(&default_data).unwrap();
 

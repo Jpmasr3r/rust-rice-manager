@@ -3,6 +3,10 @@ name = "rust-rice-manager"
 version = "0.2.0"
 edition = "2024"
 
+[[bin]]
+name = "rrm"
+path = "src/main.rs"
+
 [dependencies]
 clap = {version = "4.5.48", features = ["derive"] }
 serde = {version="1.0.228",features=["derive"]}

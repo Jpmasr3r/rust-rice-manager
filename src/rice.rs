@@ -6,6 +6,7 @@ pub enum Crud {
         #[arg(long = "id", short = 'i')]
         id: String,
     },
+    List,
     File {
         #[command(subcommand)]
         crud: crate::symlink::Crud,
@@ -19,10 +20,28 @@ pub enum Crud {
 pub fn add(id: String) {
     let mut data: json::Data = json::read_json();
 
-    let rice = json::Rice::new(id);
+    if data.rices.iter().any(|r| r.id == id) {
+        eprintln!("Rice with id '{}' already exists.", id);
+        return;
+    }
+
+    let rice = json::Rice::new(id.clone());
     data.rices.push(rice);
 
-    json::json_write(&data).unwrap();
+    match json::json_write(&data) {
+        Ok(_) => println!("Rice {} successfully added.", id),
+        Err(e) => eprintln!("Failed to add rice: {}", e),
+    }
+}
+
+pub fn list() {
+    let data: json::Data = json::read_json();
+
+    println!("----- Rices -----");
+
+    for rice in data.rices {
+        println!("ID: {}", rice.id);
+    }
 }
 
 pub fn change(id: String) {
@@ -38,7 +57,6 @@ pub fn change(id: String) {
         let file = &data.files[symlink.file];
         let file_path = std::path::Path::new(&file.path);
 
-        // Remove o arquivo/symlink existente se houver
         if file_path.exists() {
             if let Err(e) = std::fs::remove_file(&file.path) {
                 eprintln!("Erro ao remover {}: {}", file.path, e);
@@ -46,7 +64,6 @@ pub fn change(id: String) {
             }
         }
 
-        // Cria o symlink: symlink.path (origem) -> file.path (destino)
         if let Err(e) = std::os::unix::fs::symlink(&symlink.path, &file.path) {
             eprintln!("Erro ao criar symlink {}: {}", file.path, e);
         } else {

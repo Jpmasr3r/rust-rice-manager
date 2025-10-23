@@ -6,6 +6,9 @@
 pub struct Args {
     #[command(subcommand)]
     pub sub_args: SubArgs,
+
+    #[arg(long, default_value_t = false)]
+    pub dev: bool,
 }
 
 #[derive(clap::Subcommand)]
