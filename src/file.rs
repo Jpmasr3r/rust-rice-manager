@@ -27,7 +27,10 @@ pub fn add(id: String, path: String) {
     data.files.push(file);
 
     match json::json_write(&data) {
-        Ok(_) => println!("File {} successfully added.", id),
+        Ok(_) => {
+            println!("----- Adding File -----");
+            println!("File {} successfully added.", id)
+        }
         Err(e) => eprintln!("Failed to add file: {}", e),
     }
 }
@@ -35,8 +38,7 @@ pub fn add(id: String, path: String) {
 pub fn list() {
     let data: json::Data = json::read_json();
 
-    println!("----- Files -----");
-
+    println!("----- Listing Files -----");
     for file in data.files {
         println!("ID: {}, Path: {}", file.id, file.path);
     }
@@ -45,25 +47,33 @@ pub fn list() {
 pub fn remove(id: String) {
     let mut data: json::Data = json::read_json();
 
-    let file_index = data
-        .files
-        .iter()
-        .position(|f| f.id == id)
-        .expect("File ID not found.");
-    let initial_len = data.files.len();
+    let file_index = match data.files.iter().position(|f| f.id == id) {
+        Some(index) => index,
+        None => {
+            eprintln!("No file found with id '{}'.", id);
+            return;
+        }
+    };
 
-    data.files.retain(|f| f.id != id);
-    data.rices.iter_mut().for_each(|rice| {
-        rice.symlinks.retain(|symlink| symlink.file != file_index);
-    });
-
-    if data.files.len() == initial_len {
-        eprintln!("No file found with id '{}'.", id);
-        return;
+    for rice in data.rices.iter_mut() {
+        for symlink in rice.symlinks.iter() {
+            if symlink.file == file_index {
+                eprintln!(
+                    "Cannot remove file '{}': it is still linked in rice '{}'.",
+                    id, rice.id
+                );
+                return;
+            }
+        }
     }
 
+    data.files.remove(file_index);
+
     match json::json_write(&data) {
-        Ok(_) => println!("File {} successfully removed.", id),
+        Ok(_) => {
+            println!("----- Removing File -----");
+            println!("File {} successfully removed.", id)
+        }
         Err(e) => eprintln!("Failed to remove file: {}", e),
     }
 }

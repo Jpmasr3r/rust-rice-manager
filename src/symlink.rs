@@ -71,10 +71,13 @@ pub fn add(rice_id: String, file_id: String, symlink_path: String) {
     data.rices[rice_index].symlinks.push(symlink);
 
     match json::json_write(&data) {
-        Ok(_) => println!(
-            "Symlink for file '{}' in rice '{}' successfully added.",
-            file_id, rice_id
-        ),
+        Ok(_) => {
+            println!("----- Adding Symlink -----");
+            println!(
+                "Symlink for file '{}' in rice '{}' successfully added.",
+                file_id, rice_id
+            )
+        }
         Err(e) => eprintln!("Failed to add symlink: {}", e),
     }
 }
@@ -88,8 +91,7 @@ pub fn list(rice_id: String) {
         .find(|r| r.id == rice_id)
         .expect("Rice ID not found");
 
-    println!("----- Symlinks for Rice: {} -----", rice.id);
-
+    println!("----- List Symlinks for Rice: {} -----", rice.id);
     for symlink in &rice.symlinks {
         let file = &data.files[symlink.file];
         println!("File ID: {}, Symlink Path: {}", file.id, symlink.path);
@@ -113,15 +115,30 @@ pub fn remove(rice_id: String, file_id: String) {
 
     std::fs::remove_file(&symlink.path).expect("Failed to remove symlink file");
 
+    let mut current: PathBuf = PathBuf::from(&symlink.path);
+    for _ in 0..3 {
+        current = current
+            .parent()
+            .expect("Failed to get parent directory")
+            .to_path_buf();
+        match std::fs::remove_dir(&current) {
+            Ok(_) => {}
+            Err(_) => break,
+        }
+    }
+
     data.rices[rice_index]
         .symlinks
         .retain(|s| data.files[s.file].id != file_id);
 
     match json::json_write(&data) {
-        Ok(_) => println!(
-            "Symlink for file '{}' in rice '{}' successfully removed.",
-            file_id, rice_id
-        ),
+        Ok(_) => {
+            println!("----- Removing Symlink -----");
+            println!(
+                "Symlink for file '{}' in rice '{}' successfully removed.",
+                file_id, rice_id
+            )
+        }
         Err(e) => eprintln!("Failed to remove symlink: {}", e),
     }
 }

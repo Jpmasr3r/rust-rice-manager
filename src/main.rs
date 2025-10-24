@@ -30,6 +30,9 @@ fn main() {
             rice::Crud::List => {
                 rice::list();
             }
+            rice::Crud::Remove { id } => {
+                rice::remove(id);
+            }
             rice::Crud::File { crud } => match crud {
                 symlink::Crud::Add {
                     rice_id,
