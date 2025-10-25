@@ -117,9 +117,11 @@ pub fn change(id: String) {
             }
 
             // Usuário confirmou, remove o arquivo
-            if let Err(e) = std::fs::remove_file(&file.path) {
-                eprintln!("Erro ao remover arquivo {}: {}", file.path, e);
-                continue;
+            if PathBuf::from(&file.path).exists() {
+                if let Err(e) = std::fs::remove_file(&file.path) {
+                    eprintln!("Erro ao remover arquivo {}: {}", file.path, e);
+                    continue;
+                }
             }
         }
 
