@@ -38,7 +38,7 @@
     - [Funcionalidade](#funcionalidade)
     - [Instalação](#instalação)
     - [Como Usar](#como-usar)
-      - [Arquivo](#arquivo)
+      - [File](#file-1)
       - [Rice](#rice-1)
       - [Rice File](#rice-file-1)
     - [Exemplo de Uso](#exemplo-de-uso)
@@ -103,6 +103,7 @@ All aspects can be fully manipulated.
 
 - **Add** → Adds a new symlink (requires File ID, Rice ID, and the path to the file).  
 - **Remove** → Removes a symlink from the rice (requires the File ID).  
+- **List** -> List the simlinks of a rice (requires the Rice ID)
 - **Update** → Replaces the file saved in `~/.config/rrm/rice/your_rice` (requires Rice ID, File ID, and new file path).
 
 ---
@@ -129,9 +130,7 @@ rrm rice change --id dark-theme
 
 - [x] Basic file and rice management  
 - [ ] Backup and restore support  
-- [ ] GUI front-end  
 - [ ] Export/import rices  
-- [ ] Auto-detection of configuration changes  
 
 ---
 
@@ -169,14 +168,14 @@ cargo build --release
 
 ### Como Usar
 
-O RRM usa uma lógica em que **Arquivos** armazenam caminhos para arquivos de configuração do sistema (por exemplo, `hyprland.conf`).  
+O RRM usa uma lógica em que **Files** armazenam caminhos para arquivos de configuração do sistema (por exemplo, `hyprland.conf`).  
 Então, **Rices** agrupam esses arquivos em conjuntos que podem ser trocados dinamicamente através de symlinks.
 
 Todos os aspectos podem ser completamente manipulados.
 
 ---
 
-#### Arquivo
+#### File
 
 - **Add** → Adiciona um novo arquivo (requer caminho e ID).  
 - **Remove** → Remove um arquivo (se não houver symlink anexado, requer o ID).  
@@ -200,7 +199,7 @@ Todos os aspectos podem ser completamente manipulados.
 
 - **Add** → Adiciona um novo symlink (requer ID do Arquivo, ID do Rice e caminho do arquivo).  
 - **Remove** → Remove um symlink do rice (requer o ID do Arquivo e o ID do Rice).  
-- **List** -> List os simlinks de um rice (requer o ID do Rice)
+- **List** -> Lista os simlinks de um rice (requer o ID do Rice)
 - **Update** → Substitui o arquivo salvo em `~/.config/rrm/rice/your_rice` (requer ID do Rice, ID do Arquivo e novo caminho).
 
 ---
@@ -227,9 +226,7 @@ rrm rice change --id dark-theme
 
 - [x] Gerenciamento básico de arquivos e rices  
 - [ ] Suporte a backup e restauração  
-- [ ] Interface gráfica (GUI)  
 - [ ] Exportar/importar rices  
-- [ ] Detecção automática de alterações nas configurações  
 
 ---
 
