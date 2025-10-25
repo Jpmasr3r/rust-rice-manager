@@ -22,6 +22,13 @@ fn main() {
             file::Crud::Remove { id } => {
                 file::remove(id);
             }
+            file::Crud::Update {
+                id,
+                new_id,
+                new_path,
+            } => {
+                file::update(id, new_id, new_path);
+            }
         },
         cli::SubArgs::Rice { crud } => match crud {
             rice::Crud::Add { id } => {
@@ -47,9 +54,19 @@ fn main() {
                 symlink::Crud::Remove { rice_id, file_id } => {
                     symlink::remove(rice_id, file_id);
                 }
+                symlink::Crud::Update {
+                    rice_id,
+                    file_id,
+                    symlink_path,
+                } => {
+                    symlink::update(rice_id, file_id, symlink_path);
+                }
             },
             rice::Crud::Change { id } => {
                 rice::change(id);
+            }
+            rice::Crud::Update { id, new_id } => {
+                rice::update(id, new_id);
             }
         },
     }
