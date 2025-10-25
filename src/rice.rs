@@ -112,23 +112,23 @@ pub fn change(id: String) {
             let input = input.trim().to_lowercase();
 
             if input != "y" && input != "yes" {
-                println!("Pulando '{}'", file.path);
+                println!("Skip '{}'", file.path);
                 continue;
             }
 
             // Usuário confirmou, remove o arquivo
             if PathBuf::from(&file.path).exists() {
                 if let Err(e) = std::fs::remove_file(&file.path) {
-                    eprintln!("Erro ao remover arquivo {}: {}", file.path, e);
+                    eprintln!("Error creating symlink {}: {}", file.path, e);
                     continue;
                 }
             }
         }
 
         if let Err(e) = std::os::unix::fs::symlink(&symlink.path, &file.path) {
-            eprintln!("Erro ao criar symlink {}: {}", file.path, e);
+            eprintln!("Error creating symlink {}: {}", file.path, e);
         } else {
-            println!("✓ Symlink criado: {} -> {}", file.path, symlink.path);
+            println!("✓ Symlink created: {} -> {}", file.path, symlink.path);
         }
     }
 }
